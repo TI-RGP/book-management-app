@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}本一覧 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>本一覧</h1>
+    
+    <div class="search-section">
+        <form method="get" class="search-form">
+            <input type="text" name="q" value="{{ search_query }}" placeholder="タイトルまたは著者で検索...">
+            <button type="submit">検索</button>
+        </form>
+        <a href="/books/new" class="btn btn-primary">新しい本を追加</a>
+    </div>
+
+    {% if books %}
+        <div class="books-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>タイトル</th>
+                        <th>著者</th>
+                        <th>ステータス</th>
+                        <th>借り手</th>
+                        <th>返却予定</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                    <tr>
+                        <td><a href="/books/{{ book.id }}">{{ book.title }}</a></td>
+                        <td>{{ book.author }}</td>
+                        <td>
+                            <span class="status status-{{ book.status.value }}">
+                                {% if book.status.value == 'available' %}在庫あり{% else %}貸出中{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ book.borrower or '-' }}</td>
+                        <td>
+                            {% if book.due_date %}
+                                {{ book.due_date.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if book.status.value == 'available' %}
+                                <a href="/books/{{ book.id }}/checkout" class="btn btn-small">貸出</a>
+                            {% else %}
+                                <form method="post" action="/books/{{ book.id }}/return" style="display: inline;">
+                                    <button type="submit" class="btn btn-small btn-secondary">返却</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>
+            {% if search_query %}
+                「{{ search_query }}」に該当する本が見つかりませんでした。
+            {% else %}
+                まだ本が登録されていません。
+            {% endif %}
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="book-detail">
+        <h1>{{ book.title }}</h1>
+        <p class="author">著者: {{ book.author }}</p>
+        
+        <div class="book-info">
+            <div class="status-section">
+                <span class="status status-{{ book.status.value }}">
+                    {% if book.status.value == 'available' %}在庫あり{% else %}貸出中{% endif %}
+                </span>
+                
+                {% if book.status.value == 'borrowed' %}
+                    <p>借り手: {{ book.borrower }}</p>
+                    <p>返却予定: {{ book.due_date.strftime('%Y-%m-%d') }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="actions">
+                {% if book.status.value == 'available' %}
+                    <a href="/books/{{ book.id }}/checkout" class="btn btn-primary">貸出</a>
+                {% else %}
+                    <form method="post" action="/books/{{ book.id }}/return" style="display: inline;">
+                        <button type="submit" class="btn btn-primary">返却</button>
+                    </form>
+                {% endif %}
+                <a href="/books" class="btn btn-secondary">一覧に戻る</a>
+            </div>
+        </div>
+        
+        <div class="meta-info">
+            <p>登録日: {{ book.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p>更新日: {{ book.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        </div>
+    </div>
+
+    {% if loans %}
+        <div class="loan-history">
+            <h2>貸出履歴</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>借り手</th>
+                        <th>貸出日</th>
+                        <th>返却予定</th>
+                        <th>返却日</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                    <tr>
+                        <td>{{ loan.borrower }}</td>
+                        <td>{{ loan.checkout_at.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ loan.due_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if loan.returned_at %}
+                                {{ loan.returned_at.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                未返却
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

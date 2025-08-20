@@ -1,0 +1,42 @@
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Optional
+from .models import BookStatus
+
+class BookBase(BaseModel):
+    title: str
+    author: str
+
+class BookCreate(BookBase):
+    pass
+
+class Book(BookBase):
+    id: int
+    status: BookStatus
+    borrower: Optional[str] = None
+    due_date: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class CheckoutRequest(BaseModel):
+    borrower: str
+    due_date: datetime
+
+class LoanBase(BaseModel):
+    borrower: str
+    due_date: datetime
+
+class LoanCreate(LoanBase):
+    book_id: int
+
+class Loan(LoanBase):
+    id: int
+    book_id: int
+    checkout_at: datetime
+    returned_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

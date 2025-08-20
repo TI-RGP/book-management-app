@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}ダッシュボード - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>ダッシュボード</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>総登録数</h3>
+            <div class="stat-number">{{ total_books }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>在庫数</h3>
+            <div class="stat-number available">{{ available_books }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>貸出中</h3>
+            <div class="stat-number borrowed">{{ borrowed_books }}</div>
+        </div>
+    </div>
+
+    <div class="recent-books">
+        <h2>最近追加された本</h2>
+        {% if recent_books %}
+            <div class="book-grid">
+                {% for book in recent_books %}
+                <div class="book-card">
+                    <h4><a href="/books/{{ book.id }}">{{ book.title }}</a></h4>
+                    <p class="author">著者: {{ book.author }}</p>
+                    <span class="status status-{{ book.status.value }}">
+                        {% if book.status.value == 'available' %}在庫あり{% else %}貸出中{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>まだ本が登録されていません。</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
