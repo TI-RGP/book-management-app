@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from ..database import get_db
-from ..models import Book, Loan, Reservation, BookStatus, ReservationStatus
+from ..models import Book, Loan, Reservation, BookStatus, ReservationStatus, Genre
 from .. import schemas
 
 router = APIRouter()
@@ -72,33 +72,74 @@ def books_list(
     })
 
 @router.get("/books/new", response_class=HTMLResponse)
-def book_new_form(request: Request):
-    return templates.TemplateResponse("book_new.html", {"request": request})
+def book_new_form(request: Request, db: Session = Depends(get_db)):
+    genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    return templates.TemplateResponse("book_new.html", {
+        "request": request,
+        "genres": genres
+    })
 
 @router.post("/books/new")
 def create_book(
     request: Request,
     title: str = Form(...),
     author: str = Form(...),
-    genre: str = Form(""),
+    description: str = Form(""),
+    genre_id: Optional[str] = Form(None),
     isbn: str = Form(""),
+    publisher: str = Form(""),
+    publication_year: Optional[str] = Form(None),
+    pages: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
+    genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    
     if not title.strip() or not author.strip():
         return templates.TemplateResponse("book_new.html", {
             "request": request,
             "error": "タイトルと著者は必須です",
             "title": title,
             "author": author,
-            "genre": genre,
-            "isbn": isbn
+            "description": description,
+            "genre_id": genre_id,
+            "isbn": isbn,
+            "publisher": publisher,
+            "publication_year": publication_year,
+            "pages": pages,
+            "genres": genres
         })
+    
+    # Parse optional fields
+    genre_id_int = None
+    if genre_id and genre_id.strip():
+        try:
+            genre_id_int = int(genre_id)
+        except ValueError:
+            pass
+    
+    publication_year_int = None
+    if publication_year and publication_year.strip():
+        try:
+            publication_year_int = int(publication_year)
+        except ValueError:
+            pass
+    
+    pages_int = None
+    if pages and pages.strip():
+        try:
+            pages_int = int(pages)
+        except ValueError:
+            pass
     
     db_book = Book(
         title=title.strip(), 
         author=author.strip(),
-        genre=genre.strip() if genre.strip() else None,
-        isbn=isbn.strip() if isbn.strip() else None
+        description=description.strip() if description.strip() else None,
+        genre_id=genre_id_int,
+        isbn=isbn.strip() if isbn.strip() else None,
+        publisher=publisher.strip() if publisher.strip() else None,
+        publication_year=publication_year_int,
+        pages=pages_int
     )
     db.add(db_book)
     db.commit()
@@ -324,3 +365,83 @@ def reservations_list(request: Request, db: Session = Depends(get_db)):
         "request": request,
         "reservations": active_reservations
     })
+
+# 書籍編集機能
+@router.get("/books/{book_id}/edit", response_class=HTMLResponse)
+def book_edit_form(request: Request, book_id: int, db: Session = Depends(get_db)):
+    book = db.query(Book).filter(Book.id == book_id).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    
+    return templates.TemplateResponse("book_edit.html", {
+        "request": request,
+        "book": book,
+        "genres": genres
+    })
+
+@router.post("/books/{book_id}/edit")
+def update_book(
+    request: Request,
+    book_id: int,
+    title: str = Form(...),
+    author: str = Form(...),
+    description: str = Form(""),
+    genre_id: Optional[str] = Form(None),
+    isbn: str = Form(""),
+    publisher: str = Form(""),
+    publication_year: Optional[str] = Form(None),
+    pages: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    book = db.query(Book).filter(Book.id == book_id).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    
+    if not title.strip() or not author.strip():
+        return templates.TemplateResponse("book_edit.html", {
+            "request": request,
+            "error": "タイトルと著者は必須です",
+            "book": book,
+            "genres": genres
+        })
+    
+    # Parse optional fields
+    genre_id_int = None
+    if genre_id and genre_id.strip():
+        try:
+            genre_id_int = int(genre_id)
+        except ValueError:
+            pass
+    
+    publication_year_int = None
+    if publication_year and publication_year.strip():
+        try:
+            publication_year_int = int(publication_year)
+        except ValueError:
+            pass
+    
+    pages_int = None
+    if pages and pages.strip():
+        try:
+            pages_int = int(pages)
+        except ValueError:
+            pass
+    
+    # Update book fields
+    book.title = title.strip()
+    book.author = author.strip()
+    book.description = description.strip() if description.strip() else None
+    book.genre_id = genre_id_int
+    book.isbn = isbn.strip() if isbn.strip() else None
+    book.publisher = publisher.strip() if publisher.strip() else None
+    book.publication_year = publication_year_int
+    book.pages = pages_int
+    book.updated_at = datetime.utcnow()
+    
+    db.commit()
+    
+    return RedirectResponse(url=f"/books/{book_id}", status_code=303)

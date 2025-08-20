@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}ジャンル編集 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>ジャンルを編集</h1>
+    
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="genre-form">
+        <div class="form-group">
+            <label for="name">ジャンル名 *</label>
+            <input type="text" id="name" name="name" value="{{ genre.name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="parent_id">親ジャンル</label>
+            <select id="parent_id" name="parent_id">
+                <option value="">なし（大分類として設定）</option>
+                {% for g in all_genres %}
+                    {% if g.level < 3 %}
+                        <option value="{{ g.id }}" 
+                                {% if genre.parent_id == g.id %}selected{% endif %}>
+                            {% for i in range(g.level - 1) %}　{% endfor %}{{ g.name }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">説明</label>
+            <textarea id="description" name="description" rows="3">{{ genre.description or '' }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">更新</button>
+            <a href="/genres" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}新規登録 - 図書管理システム{% endblock %}
+{% block title %}本の編集 - 図書管理システム{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>新しい本を登録</h1>
+    <h1>本の情報を編集</h1>
     
     {% if error %}
         <div class="alert alert-error">{{ error }}</div>
@@ -13,17 +13,17 @@
     <form method="post" class="book-form">
         <div class="form-group">
             <label for="title">タイトル *</label>
-            <input type="text" id="title" name="title" value="{{ title or '' }}" required>
+            <input type="text" id="title" name="title" value="{{ book.title }}" required>
         </div>
         
         <div class="form-group">
             <label for="author">著者 *</label>
-            <input type="text" id="author" name="author" value="{{ author or '' }}" required>
+            <input type="text" id="author" name="author" value="{{ book.author }}" required>
         </div>
         
         <div class="form-group">
             <label for="description">概要・説明</label>
-            <textarea id="description" name="description" rows="4" placeholder="本の内容や特徴を記述してください">{{ description or '' }}</textarea>
+            <textarea id="description" name="description" rows="4" placeholder="本の内容や特徴を記述してください">{{ book.description or '' }}</textarea>
         </div>
         
         <div class="form-group">
@@ -32,7 +32,7 @@
                 <option value="">ジャンルを選択してください</option>
                 {% for genre in genres %}
                     <option value="{{ genre.id }}" 
-                            {% if genre_id and genre_id|string == genre.id|string %}selected{% endif %}>
+                            {% if book.genre_id == genre.id %}selected{% endif %}>
                         {% for i in range(genre.level - 1) %}　{% endfor %}{{ genre.name }}
                     </option>
                 {% endfor %}
@@ -42,30 +42,30 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="isbn">ISBN</label>
-                <input type="text" id="isbn" name="isbn" value="{{ isbn or '' }}" placeholder="978-4-123456-78-9">
+                <input type="text" id="isbn" name="isbn" value="{{ book.isbn or '' }}" placeholder="978-4-123456-78-9">
             </div>
             
             <div class="form-group">
                 <label for="publisher">出版社</label>
-                <input type="text" id="publisher" name="publisher" value="{{ publisher or '' }}">
+                <input type="text" id="publisher" name="publisher" value="{{ book.publisher or '' }}">
             </div>
         </div>
         
         <div class="form-row">
             <div class="form-group">
                 <label for="publication_year">出版年</label>
-                <input type="number" id="publication_year" name="publication_year" value="{{ publication_year or '' }}" min="1000" max="2030">
+                <input type="number" id="publication_year" name="publication_year" value="{{ book.publication_year or '' }}" min="1000" max="2030">
             </div>
             
             <div class="form-group">
                 <label for="pages">ページ数</label>
-                <input type="number" id="pages" name="pages" value="{{ pages or '' }}" min="1">
+                <input type="number" id="pages" name="pages" value="{{ book.pages or '' }}" min="1">
             </div>
         </div>
         
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">登録</button>
-            <a href="/books" class="btn btn-secondary">キャンセル</a>
+            <button type="submit" class="btn btn-primary">更新</button>
+            <a href="/books/{{ book.id }}" class="btn btn-secondary">キャンセル</a>
         </div>
     </form>
 </div>

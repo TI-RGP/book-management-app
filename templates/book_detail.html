@@ -5,10 +5,68 @@
 {% block content %}
 <div class="container">
     <div class="book-detail">
-        <h1>{{ book.title }}</h1>
-        <p class="author">著者: {{ book.author }}</p>
-        {% if book.genre %}<p class="genre">ジャンル: {{ book.genre }}</p>{% endif %}
-        {% if book.isbn %}<p class="isbn">ISBN: {{ book.isbn }}</p>{% endif %}
+        <div class="book-header">
+            <h1>{{ book.title }}</h1>
+            <div class="book-actions-header">
+                <a href="/books/{{ book.id }}/edit" class="btn btn-info">編集</a>
+            </div>
+        </div>
+        
+        <div class="book-metadata">
+            <div class="metadata-item">
+                <strong>著者:</strong> {{ book.author }}
+            </div>
+            
+            {% if book.genre_obj %}
+                <div class="metadata-item">
+                    <strong>ジャンル:</strong> 
+                    <span class="genre-breadcrumb">
+                        {% if book.genre_obj.parent %}
+                            {% if book.genre_obj.parent.parent %}
+                                {{ book.genre_obj.parent.parent.name }} > 
+                            {% endif %}
+                            {{ book.genre_obj.parent.name }} > 
+                        {% endif %}
+                        {{ book.genre_obj.name }}
+                    </span>
+                </div>
+            {% endif %}
+            
+            {% if book.description %}
+                <div class="metadata-item description">
+                    <strong>概要:</strong>
+                    <p class="book-description">{{ book.description }}</p>
+                </div>
+            {% endif %}
+            
+            <div class="metadata-row">
+                {% if book.isbn %}
+                    <div class="metadata-item">
+                        <strong>ISBN:</strong> {{ book.isbn }}
+                    </div>
+                {% endif %}
+                
+                {% if book.publisher %}
+                    <div class="metadata-item">
+                        <strong>出版社:</strong> {{ book.publisher }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="metadata-row">
+                {% if book.publication_year %}
+                    <div class="metadata-item">
+                        <strong>出版年:</strong> {{ book.publication_year }}年
+                    </div>
+                {% endif %}
+                
+                {% if book.pages %}
+                    <div class="metadata-item">
+                        <strong>ページ数:</strong> {{ book.pages }}ページ
+                    </div>
+                {% endif %}
+            </div>
+        </div>
         
         <div class="book-info">
             <div class="status-section">

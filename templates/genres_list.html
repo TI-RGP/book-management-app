@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}ジャンル管理 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>ジャンル管理</h1>
+    
+    <div class="action-buttons">
+        <a href="/genres/new" class="btn btn-primary">新しいジャンルを追加</a>
+        <a href="/books" class="btn btn-secondary">本一覧に戻る</a>
+    </div>
+
+    {% if request.query_params.get('error') == 'has_children' %}
+        <div class="alert alert-error">
+            このジャンルにはサブジャンルが存在するため削除できません。
+        </div>
+    {% elif request.query_params.get('error') == 'has_books' %}
+        <div class="alert alert-error">
+            このジャンルを使用している本が存在するため削除できません。
+        </div>
+    {% endif %}
+
+    {% if genre_tree %}
+        <div class="genres-tree">
+            {% for item in genre_tree %}
+                <div class="genre-item level-{{ item.genre.level }}">
+                    <div class="genre-header">
+                        <span class="genre-name">{{ item.genre.name }}</span>
+                        {% if item.genre.description %}
+                            <span class="genre-description">{{ item.genre.description }}</span>
+                        {% endif %}
+                        <div class="genre-actions">
+                            <a href="/genres/{{ item.genre.id }}/edit" class="btn btn-small btn-info">編集</a>
+                            <a href="/genres/new?parent_id={{ item.genre.id }}" class="btn btn-small btn-primary">サブジャンル追加</a>
+                            <form method="post" action="/genres/{{ item.genre.id }}/delete" style="display: inline;">
+                                <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('このジャンルを削除してもよろしいですか？')">削除</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    {% if item.children %}
+                        <div class="genre-children">
+                            {% for child_item in item.children %}
+                                <div class="genre-item level-{{ child_item.genre.level }}">
+                                    <div class="genre-header">
+                                        <span class="genre-name">{{ child_item.genre.name }}</span>
+                                        {% if child_item.genre.description %}
+                                            <span class="genre-description">{{ child_item.genre.description }}</span>
+                                        {% endif %}
+                                        <div class="genre-actions">
+                                            <a href="/genres/{{ child_item.genre.id }}/edit" class="btn btn-small btn-info">編集</a>
+                                            {% if child_item.genre.level < 3 %}
+                                                <a href="/genres/new?parent_id={{ child_item.genre.id }}" class="btn btn-small btn-primary">サブジャンル追加</a>
+                                            {% endif %}
+                                            <form method="post" action="/genres/{{ child_item.genre.id }}/delete" style="display: inline;">
+                                                <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('このジャンルを削除してもよろしいですか？')">削除</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if child_item.children %}
+                                        <div class="genre-children">
+                                            {% for grandchild_item in child_item.children %}
+                                                <div class="genre-item level-{{ grandchild_item.genre.level }}">
+                                                    <div class="genre-header">
+                                                        <span class="genre-name">{{ grandchild_item.genre.name }}</span>
+                                                        {% if grandchild_item.genre.description %}
+                                                            <span class="genre-description">{{ grandchild_item.genre.description }}</span>
+                                                        {% endif %}
+                                                        <div class="genre-actions">
+                                                            <a href="/genres/{{ grandchild_item.genre.id }}/edit" class="btn btn-small btn-info">編集</a>
+                                                            <form method="post" action="/genres/{{ grandchild_item.genre.id }}/delete" style="display: inline;">
+                                                                <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('このジャンルを削除してもよろしいですか？')">削除</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>まだジャンルが登録されていません。</p>
+    {% endif %}
+</div>
+{% endblock %}
