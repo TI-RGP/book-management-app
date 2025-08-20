@@ -20,8 +20,18 @@ app.include_router(genres.router)
 def create_sample_data():
     db = next(get_db())
     try:
-        # Create sample genres if they don't exist
+        # Only create sample data if no data exists (not on every deployment)
         existing_genres = db.query(Genre).count()
+        existing_books = db.query(Book).count()
+        
+        # Skip if data already exists
+        if existing_genres > 0 or existing_books > 0:
+            print("Data already exists, skipping sample data creation")
+            return
+        
+        print("Creating sample data...")
+        
+        # Create sample genres if they don't exist
         if existing_genres == 0:
             sample_genres = [
                 Genre(name="技術書", level=1, description="プログラミングや技術関連の書籍"),
@@ -54,15 +64,15 @@ def create_sample_data():
                             genre.parent_id = parent.id
             db.commit()
         
-        existing_books = db.query(Book).count()
-        if existing_books == 0:
-            # Get sample genres for books
-            python_genre = db.query(Genre).filter(Genre.name == "Python").first()
-            web_genre = db.query(Genre).filter(Genre.name == "Web開発").first()
-            db_genre = db.query(Genre).filter(Genre.name == "データベース").first()
-            
-            sample_books = [
-                Book(
+        # Create sample books
+        print("Creating sample books...")
+        # Get sample genres for books
+        python_genre = db.query(Genre).filter(Genre.name == "Python").first()
+        web_genre = db.query(Genre).filter(Genre.name == "Web開発").first()
+        db_genre = db.query(Genre).filter(Genre.name == "データベース").first()
+        
+        sample_books = [
+            Book(
                     title="Pythonプログラミング入門",
                     author="山田太郎",
                     description="Pythonの基礎から応用まで学べる入門書です。初心者にもわかりやすく解説されています。",
@@ -103,11 +113,11 @@ def create_sample_data():
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow()
                 )
-            ]
-            
-            for book in sample_books:
-                db.add(book)
-            db.commit()
-            print("サンプルデータを作成しました")
+        ]
+        
+        for book in sample_books:
+            db.add(book)
+        db.commit()
+        print("サンプルデータを作成しました")
     finally:
         db.close()
