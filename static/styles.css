@@ -168,6 +168,21 @@ h2 {
     color: #e67e22;
 }
 
+.status-reserved {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-overdue {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-returned {
+    background-color: #d4edda;
+    color: #155724;
+}
+
 /* 検索セクション */
 .search-section {
     display: flex;
@@ -222,6 +237,33 @@ h2 {
 .btn-small {
     padding: 0.25rem 0.5rem;
     font-size: 0.8rem;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
 }
 
 /* テーブル */
@@ -359,11 +401,65 @@ td a:hover {
 }
 
 /* 履歴セクション */
-.loan-history {
+.loan-history, .reservations {
     background: white;
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+/* 検索フィルター */
+.search-filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-filters input, .search-filters select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.search-filters input {
+    min-width: 200px;
+}
+
+.search-filters select {
+    min-width: 150px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* 延滞関連 */
+.overdue-row {
+    background-color: #fdf2f2 !important;
+}
+
+.overdue-days {
+    font-weight: bold;
+    color: #dc3545;
+}
+
+.overdue {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* テーブルの種類別スタイル */
+.loans-table, .overdue-table, .reservations-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 1rem;
 }
 
 /* アラート */
@@ -377,6 +473,24 @@ td a:hover {
     background-color: #ffeaa7;
     color: #e67e22;
     border: 1px solid #fdcb6e;
+}
+
+.alert-warning {
+    background-color: #fff2cc;
+    color: #d68910;
+    border: 1px solid #f9ca24;
+}
+
+.alert-success {
+    background-color: #d5f4e6;
+    color: #27ae60;
+    border: 1px solid #52c41a;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
 }
 
 /* フッター */

@@ -21,6 +21,16 @@
             <input type="text" id="author" name="author" value="{{ author or '' }}" required>
         </div>
         
+        <div class="form-group">
+            <label for="genre">ジャンル</label>
+            <input type="text" id="genre" name="genre" value="{{ genre or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="isbn">ISBN</label>
+            <input type="text" id="isbn" name="isbn" value="{{ isbn or '' }}">
+        </div>
+        
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">登録</button>
             <a href="/books" class="btn btn-secondary">キャンセル</a>

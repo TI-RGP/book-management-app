@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}貸出履歴 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>貸出履歴</h1>
+    
+    <div class="action-buttons">
+        <a href="/books" class="btn btn-secondary">本一覧に戻る</a>
+        <a href="/overdue" class="btn btn-warning">延滞本</a>
+    </div>
+
+    {% if loans %}
+        <div class="loans-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>本のタイトル</th>
+                        <th>著者</th>
+                        <th>借り手</th>
+                        <th>貸出日</th>
+                        <th>返却予定</th>
+                        <th>返却日</th>
+                        <th>ステータス</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                    <tr {% if loan.is_overdue %}class="overdue-row"{% endif %}>
+                        <td><a href="/books/{{ loan.book.id }}">{{ loan.book.title }}</a></td>
+                        <td>{{ loan.book.author }}</td>
+                        <td>{{ loan.borrower }}</td>
+                        <td>{{ loan.checkout_at.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ loan.due_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if loan.returned_at %}
+                                {{ loan.returned_at.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                未返却
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if loan.returned_at %}
+                                <span class="status status-returned">返却済み</span>
+                            {% elif loan.is_overdue %}
+                                <span class="status status-overdue">延滞中</span>
+                            {% else %}
+                                <span class="status status-borrowed">貸出中</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>貸出履歴がありません。</p>
+    {% endif %}
+</div>
+{% endblock %}

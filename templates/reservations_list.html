@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}予約一覧 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>予約一覧</h1>
+    
+    <div class="action-buttons">
+        <a href="/books" class="btn btn-secondary">本一覧に戻る</a>
+        <a href="/loans" class="btn btn-info">貸出履歴</a>
+    </div>
+
+    {% if reservations %}
+        <div class="reservations-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>本のタイトル</th>
+                        <th>著者</th>
+                        <th>予約者</th>
+                        <th>予約日</th>
+                        <th>現在の借り手</th>
+                        <th>返却予定</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                    <tr>
+                        <td><a href="/books/{{ reservation.book.id }}">{{ reservation.book.title }}</a></td>
+                        <td>{{ reservation.book.author }}</td>
+                        <td>{{ reservation.reserver }}</td>
+                        <td>{{ reservation.reserved_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ reservation.book.borrower or '-' }}</td>
+                        <td>
+                            {% if reservation.book.due_date %}
+                                {{ reservation.book.due_date.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="/reservations/{{ reservation.id }}/cancel" style="display: inline;">
+                                <button type="submit" class="btn btn-small btn-danger">キャンセル</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>現在アクティブな予約はありません。</p>
+    {% endif %}
+</div>
+{% endblock %}

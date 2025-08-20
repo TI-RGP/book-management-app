@@ -8,10 +8,26 @@
     
     <div class="search-section">
         <form method="get" class="search-form">
-            <input type="text" name="q" value="{{ search_query }}" placeholder="タイトルまたは著者で検索...">
-            <button type="submit">検索</button>
+            <div class="search-filters">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="タイトル、著者、ジャンルで検索...">
+                <input type="text" name="author" value="{{ author_filter }}" placeholder="著者">
+                <input type="text" name="genre" value="{{ genre_filter }}" placeholder="ジャンル">
+                <select name="status">
+                    <option value="">全てのステータス</option>
+                    <option value="available" {% if status_filter == 'available' %}selected{% endif %}>在庫あり</option>
+                    <option value="borrowed" {% if status_filter == 'borrowed' %}selected{% endif %}>貸出中</option>
+                    <option value="reserved" {% if status_filter == 'reserved' %}selected{% endif %}>予約済み</option>
+                </select>
+                <button type="submit">検索</button>
+                <a href="/books" class="btn btn-secondary">クリア</a>
+            </div>
         </form>
-        <a href="/books/new" class="btn btn-primary">新しい本を追加</a>
+        <div class="action-buttons">
+            <a href="/books/new" class="btn btn-primary">新しい本を追加</a>
+            <a href="/loans" class="btn btn-info">貸出履歴</a>
+            <a href="/overdue" class="btn btn-warning">延滞本</a>
+            <a href="/reservations" class="btn btn-info">予約一覧</a>
+        </div>
     </div>
 
     {% if books %}
@@ -21,6 +37,7 @@
                     <tr>
                         <th>タイトル</th>
                         <th>著者</th>
+                        <th>ジャンル</th>
                         <th>ステータス</th>
                         <th>借り手</th>
                         <th>返却予定</th>
@@ -32,9 +49,12 @@
                     <tr>
                         <td><a href="/books/{{ book.id }}">{{ book.title }}</a></td>
                         <td>{{ book.author }}</td>
+                        <td>{{ book.genre or '-' }}</td>
                         <td>
                             <span class="status status-{{ book.status.value }}">
-                                {% if book.status.value == 'available' %}在庫あり{% else %}貸出中{% endif %}
+                                {% if book.status.value == 'available' %}在庫あり
+                                {% elif book.status.value == 'borrowed' %}貸出中
+                                {% else %}予約済み{% endif %}
                             </span>
                         </td>
                         <td>{{ book.borrower or '-' }}</td>

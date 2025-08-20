@@ -7,6 +7,8 @@
     <div class="book-detail">
         <h1>{{ book.title }}</h1>
         <p class="author">著者: {{ book.author }}</p>
+        {% if book.genre %}<p class="genre">ジャンル: {{ book.genre }}</p>{% endif %}
+        {% if book.isbn %}<p class="isbn">ISBN: {{ book.isbn }}</p>{% endif %}
         
         <div class="book-info">
             <div class="status-section">
@@ -27,6 +29,13 @@
                     <form method="post" action="/books/{{ book.id }}/return" style="display: inline;">
                         <button type="submit" class="btn btn-primary">返却</button>
                     </form>
+                    
+                    {% if can_reserve %}
+                        <form method="post" action="/books/{{ book.id }}/reserve" style="display: inline; margin-left: 10px;">
+                            <input type="text" name="reserver" placeholder="予約者名" required style="margin-right: 5px;">
+                            <button type="submit" class="btn btn-info">予約</button>
+                        </form>
+                    {% endif %}
                 {% endif %}
                 <a href="/books" class="btn btn-secondary">一覧に戻る</a>
             </div>
@@ -48,6 +57,7 @@
                         <th>貸出日</th>
                         <th>返却予定</th>
                         <th>返却日</th>
+                        <th>延滞</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,6 +72,41 @@
                             {% else %}
                                 未返却
                             {% endif %}
+                        </td>
+                        <td>
+                            {% if loan.is_overdue %}
+                                <span class="overdue">延滞中</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if reservations %}
+        <div class="reservations">
+            <h2>予約一覧</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>予約者</th>
+                        <th>予約日</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.reserver }}</td>
+                        <td>{{ reservation.reserved_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <form method="post" action="/reservations/{{ reservation.id }}/cancel" style="display: inline;">
+                                <button type="submit" class="btn btn-small btn-danger">キャンセル</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}

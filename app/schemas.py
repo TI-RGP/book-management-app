@@ -1,11 +1,13 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
-from .models import BookStatus
+from typing import Optional, List
+from .models import BookStatus, ReservationStatus
 
 class BookBase(BaseModel):
     title: str
     author: str
+    genre: Optional[str] = None
+    isbn: Optional[str] = None
 
 class BookCreate(BookBase):
     pass
@@ -37,6 +39,34 @@ class Loan(LoanBase):
     book_id: int
     checkout_at: datetime
     returned_at: Optional[datetime] = None
+    is_overdue: bool = False
 
     class Config:
         from_attributes = True
+
+class ReservationBase(BaseModel):
+    reserver: str
+
+class ReservationCreate(ReservationBase):
+    book_id: int
+
+class Reservation(ReservationBase):
+    id: int
+    book_id: int
+    status: ReservationStatus
+    reserved_at: datetime
+    notified_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class BookWithHistory(Book):
+    loans: List[Loan] = []
+    reservations: List[Reservation] = []
+
+class SearchRequest(BaseModel):
+    query: Optional[str] = None
+    author: Optional[str] = None
+    genre: Optional[str] = None
+    status: Optional[BookStatus] = None

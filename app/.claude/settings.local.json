@@ -6,12 +6,16 @@
       "Bash(where ngrok)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
-      "C:\\Users\\TeruyaIto\\.serena"
+      "C:\\Users\\TeruyaIto\\.serena",
+      "C:\\c\\Users\\TeruyaIto"
     ]
   }
 }
