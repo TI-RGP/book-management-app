@@ -24,7 +24,9 @@
                     {% if g.level < 3 %}
                         <option value="{{ g.id }}" 
                                 {% if genre.parent_id == g.id %}selected{% endif %}>
-                            {% for i in range(g.level - 1) %}　{% endfor %}{{ g.name }}
+                            {% if g.level == 1 %}{{ g.name }}
+                            {% elif g.level == 2 %}&nbsp;&nbsp;&nbsp;&nbsp;├ {{ g.name }}
+                            {% endif %}
                         </option>
                     {% endif %}
                 {% endfor %}

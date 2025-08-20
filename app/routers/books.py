@@ -38,20 +38,22 @@ def books_list(
     status: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    query = db.query(Book)
+    from sqlalchemy.orm import joinedload
+    
+    query = db.query(Book).options(joinedload(Book.genre_obj))
     
     if q:
-        query = query.filter(or_(
+        query = query.join(Genre, Book.genre_id == Genre.id, isouter=True).filter(or_(
             Book.title.contains(q),
             Book.author.contains(q),
-            Book.genre.contains(q) if Book.genre else False
+            Genre.name.contains(q)
         ))
     
     if author:
         query = query.filter(Book.author.contains(author))
     
     if genre:
-        query = query.filter(Book.genre.contains(genre))
+        query = query.join(Genre, Book.genre_id == Genre.id, isouter=True).filter(Genre.name.contains(genre))
     
     if status:
         try:
@@ -149,7 +151,9 @@ def create_book(
 
 @router.get("/books/{book_id}", response_class=HTMLResponse)
 def book_detail(request: Request, book_id: int, db: Session = Depends(get_db)):
-    book = db.query(Book).filter(Book.id == book_id).first()
+    from sqlalchemy.orm import joinedload
+    
+    book = db.query(Book).options(joinedload(Book.genre_obj)).filter(Book.id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
     
@@ -183,7 +187,7 @@ def checkout_form(request: Request, book_id: int, db: Session = Depends(get_db))
     if book.status == BookStatus.borrowed:
         return RedirectResponse(url=f"/books/{book_id}", status_code=303)
     
-    default_due_date = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
+    default_due_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     
     return templates.TemplateResponse("checkout.html", {
         "request": request,
@@ -207,7 +211,7 @@ def checkout_book(
         return RedirectResponse(url=f"/books/{book_id}", status_code=303)
     
     if not borrower.strip():
-        default_due_date = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
+        default_due_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
         return templates.TemplateResponse("checkout.html", {
             "request": request,
             "book": book,
@@ -220,7 +224,7 @@ def checkout_book(
     try:
         due_date_obj = datetime.strptime(due_date, "%Y-%m-%d")
     except ValueError:
-        default_due_date = (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d")
+        default_due_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
         return templates.TemplateResponse("checkout.html", {
             "request": request,
             "book": book,
