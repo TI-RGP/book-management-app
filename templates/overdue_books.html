@@ -38,7 +38,7 @@
                         <td>{{ loan.checkout_at.strftime('%Y-%m-%d') }}</td>
                         <td>{{ loan.due_date.strftime('%Y-%m-%d') }}</td>
                         <td>
-                            {% set days_overdue = (now() - loan.due_date).days %}
+                            {% set days_overdue = (current_time - loan.due_date).days %}
                             <span class="overdue-days">{{ days_overdue }}日</span>
                         </td>
                         <td>

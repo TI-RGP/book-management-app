@@ -42,8 +42,8 @@ def genre_new_form(request: Request, parent_id: Optional[int] = None, db: Sessio
         if not parent_genre:
             raise HTTPException(status_code=404, detail="Parent genre not found")
     
-    # Get all genres for parent selection
-    all_genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    # Get genres for parent selection (only levels 1 and 2 can be parents)
+    all_genres = db.query(Genre).filter(Genre.level < 3).order_by(Genre.level, Genre.name).all()
     
     return templates.TemplateResponse("genre_new.html", {
         "request": request,
@@ -60,7 +60,7 @@ def create_genre(
     db: Session = Depends(get_db)
 ):
     if not name.strip():
-        all_genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+        all_genres = db.query(Genre).filter(Genre.level < 3).order_by(Genre.level, Genre.name).all()
         return templates.TemplateResponse("genre_new.html", {
             "request": request,
             "error": "ジャンル名は必須です",
@@ -72,7 +72,7 @@ def create_genre(
     # Check for duplicate names
     existing_genre = db.query(Genre).filter(Genre.name == name.strip()).first()
     if existing_genre:
-        all_genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+        all_genres = db.query(Genre).filter(Genre.level < 3).order_by(Genre.level, Genre.name).all()
         return templates.TemplateResponse("genre_new.html", {
             "request": request,
             "error": "このジャンル名は既に存在します",
@@ -91,7 +91,7 @@ def create_genre(
             if parent_genre:
                 level = parent_genre.level + 1
                 if level > 3:  # Max 3 levels
-                    all_genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+                    all_genres = db.query(Genre).filter(Genre.level < 3).order_by(Genre.level, Genre.name).all()
                     return templates.TemplateResponse("genre_new.html", {
                         "request": request,
                         "error": "ジャンルは3階層までです",
@@ -120,8 +120,11 @@ def genre_edit_form(request: Request, genre_id: int, db: Session = Depends(get_d
     if not genre:
         raise HTTPException(status_code=404, detail="Genre not found")
     
-    # Get all genres except this one and its descendants for parent selection
-    all_genres = db.query(Genre).filter(Genre.id != genre_id).order_by(Genre.level, Genre.name).all()
+    # Get genres for parent selection (exclude self and descendants, max level 2 can be parent)
+    all_genres = db.query(Genre).filter(
+        Genre.id != genre_id, 
+        Genre.level < 3
+    ).order_by(Genre.level, Genre.name).all()
     
     return templates.TemplateResponse("genre_edit.html", {
         "request": request,
@@ -143,7 +146,7 @@ def update_genre(
         raise HTTPException(status_code=404, detail="Genre not found")
     
     if not name.strip():
-        all_genres = db.query(Genre).filter(Genre.id != genre_id).order_by(Genre.level, Genre.name).all()
+        all_genres = db.query(Genre).filter(Genre.id != genre_id, Genre.level < 3).order_by(Genre.level, Genre.name).all()
         return templates.TemplateResponse("genre_edit.html", {
             "request": request,
             "error": "ジャンル名は必須です",
@@ -157,7 +160,7 @@ def update_genre(
         Genre.id != genre_id
     ).first()
     if existing_genre:
-        all_genres = db.query(Genre).filter(Genre.id != genre_id).order_by(Genre.level, Genre.name).all()
+        all_genres = db.query(Genre).filter(Genre.id != genre_id, Genre.level < 3).order_by(Genre.level, Genre.name).all()
         return templates.TemplateResponse("genre_edit.html", {
             "request": request,
             "error": "このジャンル名は既に存在します",

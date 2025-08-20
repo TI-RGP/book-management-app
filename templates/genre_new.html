@@ -27,14 +27,12 @@
             <select id="parent_id" name="parent_id">
                 <option value="">なし（大分類として作成）</option>
                 {% for genre in all_genres %}
-                    {% if genre.level < 3 %}
-                        <option value="{{ genre.id }}" 
-                                {% if parent_genre and parent_genre.id == genre.id %}selected{% endif %}>
-                            {% if genre.level == 1 %}{{ genre.name }}
-                            {% elif genre.level == 2 %}&nbsp;&nbsp;&nbsp;&nbsp;├ {{ genre.name }}
-                            {% endif %}
-                        </option>
-                    {% endif %}
+                    <option value="{{ genre.id }}" 
+                            {% if parent_genre and parent_genre.id == genre.id %}selected{% endif %}>
+                        {% if genre.level == 1 %}{{ genre.name }}
+                        {% elif genre.level == 2 %}　├ {{ genre.name }}
+                        {% endif %}
+                    </option>
                 {% endfor %}
             </select>
         </div>

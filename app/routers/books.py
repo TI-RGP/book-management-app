@@ -10,6 +10,31 @@ from ..database import get_db
 from ..models import Book, Loan, Reservation, BookStatus, ReservationStatus, Genre
 from .. import schemas
 
+def get_genres_for_dropdown(db: Session):
+    """Get genres in proper hierarchical order for dropdown display"""
+    def build_dropdown_list(parent_id=None, level=1, prefix=""):
+        genres = db.query(Genre).filter(Genre.parent_id == parent_id).order_by(Genre.name).all()
+        result = []
+        
+        for genre in genres:
+            display_name = f"{prefix}{genre.name}"
+            result.append({
+                "id": genre.id,
+                "name": genre.name,
+                "display_name": display_name,
+                "level": level
+            })
+            
+            # Add children
+            if level < 3:  # Max 3 levels
+                child_prefix = f"{prefix}{genre.name} / " if level < 2 else f"{prefix}{genre.name} / "
+                children = build_dropdown_list(genre.id, level + 1, child_prefix)
+                result.extend(children)
+        
+        return result
+    
+    return build_dropdown_list()
+
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
@@ -75,7 +100,7 @@ def books_list(
 
 @router.get("/books/new", response_class=HTMLResponse)
 def book_new_form(request: Request, db: Session = Depends(get_db)):
-    genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    genres = get_genres_for_dropdown(db)
     return templates.TemplateResponse("book_new.html", {
         "request": request,
         "genres": genres
@@ -94,7 +119,7 @@ def create_book(
     pages: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
-    genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    genres = get_genres_for_dropdown(db)
     
     if not title.strip() or not author.strip():
         return templates.TemplateResponse("book_new.html", {
@@ -355,7 +380,8 @@ def overdue_books(request: Request, db: Session = Depends(get_db)):
     
     return templates.TemplateResponse("overdue_books.html", {
         "request": request,
-        "overdue_loans": overdue_loans
+        "overdue_loans": overdue_loans,
+        "current_time": now
     })
 
 # 予約一覧
@@ -377,7 +403,7 @@ def book_edit_form(request: Request, book_id: int, db: Session = Depends(get_db)
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
     
-    genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    genres = get_genres_for_dropdown(db)
     
     return templates.TemplateResponse("book_edit.html", {
         "request": request,
@@ -403,7 +429,7 @@ def update_book(
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
     
-    genres = db.query(Genre).order_by(Genre.level, Genre.name).all()
+    genres = get_genres_for_dropdown(db)
     
     if not title.strip() or not author.strip():
         return templates.TemplateResponse("book_edit.html", {

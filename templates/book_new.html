@@ -33,10 +33,7 @@
                 {% for genre in genres %}
                     <option value="{{ genre.id }}" 
                             {% if genre_id and genre_id|string == genre.id|string %}selected{% endif %}>
-                        {% if genre.level == 1 %}{{ genre.name }}
-                        {% elif genre.level == 2 %}&nbsp;&nbsp;&nbsp;&nbsp;├ {{ genre.name }}
-                        {% elif genre.level == 3 %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└ {{ genre.name }}
-                        {% endif %}
+                        {{ genre.display_name }}
                     </option>
                 {% endfor %}
             </select>
