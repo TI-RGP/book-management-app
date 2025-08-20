@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}社員名簿 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>社員名簿</h1>
+        <a href="/employees/new" class="btn btn-primary">新規社員登録</a>
+    </div>
+
+    <div class="search-section">
+        <form method="get" class="search-form">
+            <div class="search-row">
+                <div class="form-group">
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="社員番号、氏名、フリガナ、メールで検索...">
+                </div>
+                <div class="form-group">
+                    <select name="department">
+                        <option value="">全部署</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept }}" {% if department_filter == dept %}selected{% endif %}>{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select name="status">
+                        <option value="">全ステータス</option>
+                        <option value="active" {% if status_filter == "active" %}selected{% endif %}>在職中</option>
+                        <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>休職中</option>
+                        <option value="retired" {% if status_filter == "retired" %}selected{% endif %}>退職</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary">検索</button>
+                <a href="/employees" class="btn btn-outline">クリア</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="results-summary">
+        <p>{{ employees|length }}件の社員が見つかりました</p>
+    </div>
+
+    <div class="employees-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>社員番号</th>
+                    <th>氏名</th>
+                    <th>フリガナ</th>
+                    <th>部署</th>
+                    <th>役職</th>
+                    <th>ステータス</th>
+                    <th>入社日</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td>{{ employee.employee_id }}</td>
+                    <td><a href="/employees/{{ employee.id }}">{{ employee.name }}</a></td>
+                    <td>{{ employee.name_kana or "-" }}</td>
+                    <td>{{ employee.department or "-" }}</td>
+                    <td>{{ employee.position or "-" }}</td>
+                    <td>
+                        <span class="status status-{{ employee.status.value }}">
+                            {% if employee.status.value == "active" %}在職中
+                            {% elif employee.status.value == "inactive" %}休職中
+                            {% elif employee.status.value == "retired" %}退職
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if employee.hire_date %}
+                            {{ employee.hire_date.strftime('%Y-%m-%d') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/employees/{{ employee.id }}" class="btn btn-sm btn-outline">詳細</a>
+                        <a href="/employees/{{ employee.id }}/edit" class="btn btn-sm btn-secondary">編集</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if not employees %}
+        <div class="no-results">
+            <p>条件に一致する社員が見つかりませんでした。</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}新規社員登録 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>新規社員登録</h1>
+
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="employee-form">
+        <div class="form-section">
+            <h3>基本情報</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employee_id">社員番号 *</label>
+                    <input type="text" id="employee_id" name="employee_id" value="{{ employee_id or '' }}" required>
+                    <small>例: E001, EMP-2024-001</small>
+                </div>
+                <div class="form-group">
+                    <label for="name">氏名 *</label>
+                    <input type="text" id="name" name="name" value="{{ name or '' }}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name_kana">フリガナ</label>
+                    <input type="text" id="name_kana" name="name_kana" value="{{ name_kana or '' }}" placeholder="タナカタロウ">
+                </div>
+                <div class="form-group">
+                    <label for="email">メールアドレス</label>
+                    <input type="email" id="email" name="email" value="{{ email or '' }}" placeholder="user@company.com">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>勤務情報</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="department">部署</label>
+                    <input type="text" id="department" name="department" value="{{ department or '' }}" placeholder="システム開発部">
+                </div>
+                <div class="form-group">
+                    <label for="position">役職</label>
+                    <input type="text" id="position" name="position" value="{{ position or '' }}" placeholder="シニアエンジニア">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">電話番号</label>
+                    <input type="tel" id="phone" name="phone" value="{{ phone or '' }}" placeholder="03-1234-5678">
+                </div>
+                <div class="form-group">
+                    <label for="hire_date">入社日</label>
+                    <input type="date" id="hire_date" name="hire_date" value="{{ hire_date or '' }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label for="notes">備考</label>
+                <textarea id="notes" name="notes" rows="3" placeholder="特記事項があれば記入してください">{{ notes or '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">登録</button>
+            <a href="/employees" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

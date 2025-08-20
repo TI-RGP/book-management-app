@@ -17,8 +17,16 @@
 
     <form method="post" class="checkout-form">
         <div class="form-group">
-            <label for="borrower">借り手名 *</label>
-            <input type="text" id="borrower" name="borrower" value="{{ borrower or '' }}" required>
+            <label for="employee_id">借り手 *</label>
+            <select id="employee_id" name="employee_id" required>
+                <option value="">社員を選択してください</option>
+                {% for employee in employees %}
+                    <option value="{{ employee.id }}" {% if selected_employee_id == employee.id %}selected{% endif %}>
+                        {{ employee.employee_id }} - {{ employee.name }}
+                        {% if employee.department %} ({{ employee.department }}){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
         </div>
         
         <div class="form-group">

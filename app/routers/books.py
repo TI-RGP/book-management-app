@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from ..database import get_db
-from ..models import Book, Loan, Reservation, BookStatus, ReservationStatus, Genre
+from ..models import Book, Loan, Reservation, BookStatus, ReservationStatus, Genre, Employee, EmployeeStatus
 from .. import schemas
 
 def get_genres_for_dropdown(db: Session):
@@ -214,17 +214,21 @@ def checkout_form(request: Request, book_id: int, db: Session = Depends(get_db))
     
     default_due_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     
+    # Get active employees for dropdown
+    employees = db.query(Employee).filter(Employee.status == EmployeeStatus.active).order_by(Employee.employee_id).all()
+    
     return templates.TemplateResponse("checkout.html", {
         "request": request,
         "book": book,
-        "default_due_date": default_due_date
+        "default_due_date": default_due_date,
+        "employees": employees
     })
 
 @router.post("/books/{book_id}/checkout")
 def checkout_book(
     request: Request,
     book_id: int,
-    borrower: str = Form(...),
+    employee_id: int = Form(...),
     due_date: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -235,38 +239,46 @@ def checkout_book(
     if book.status == BookStatus.borrowed:
         return RedirectResponse(url=f"/books/{book_id}", status_code=303)
     
-    if not borrower.strip():
+    # Get employee
+    employee = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not employee:
+        employees = db.query(Employee).filter(Employee.status == EmployeeStatus.active).order_by(Employee.employee_id).all()
         default_due_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
         return templates.TemplateResponse("checkout.html", {
             "request": request,
             "book": book,
-            "error": "借り手名は必須です",
-            "borrower": borrower,
+            "error": "社員が選択されていません",
+            "selected_employee_id": employee_id,
             "due_date": due_date,
-            "default_due_date": default_due_date
+            "default_due_date": default_due_date,
+            "employees": employees
         })
     
     try:
         due_date_obj = datetime.strptime(due_date, "%Y-%m-%d")
     except ValueError:
+        employees = db.query(Employee).filter(Employee.status == EmployeeStatus.active).order_by(Employee.employee_id).all()
         default_due_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
         return templates.TemplateResponse("checkout.html", {
             "request": request,
             "book": book,
             "error": "正しい日付を入力してください",
-            "borrower": borrower,
+            "selected_employee_id": employee_id,
             "due_date": due_date,
-            "default_due_date": default_due_date
+            "default_due_date": default_due_date,
+            "employees": employees
         })
     
     book.status = BookStatus.borrowed
-    book.borrower = borrower.strip()
+    book.borrower = employee.name  # Keep for backward compatibility
+    book.borrower_employee_id = employee.id
     book.due_date = due_date_obj
     book.updated_at = datetime.utcnow()
     
     loan = Loan(
         book_id=book_id,
-        borrower=borrower.strip(),
+        employee_id=employee.id,
+        borrower=employee.name,  # Keep for backward compatibility
         due_date=due_date_obj
     )
     db.add(loan)

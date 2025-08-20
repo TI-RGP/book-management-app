@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from .database import engine, get_db
-from .models import Base, Book, BookStatus, Genre
-from .routers import books, genres
+from .models import Base, Book, BookStatus, Genre, Employee, EmployeeStatus
+from .routers import books, genres, employees
 
 Base.metadata.create_all(bind=engine)
 
@@ -15,6 +15,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(books.router)
 app.include_router(genres.router)
+app.include_router(employees.router)
 
 @app.on_event("startup")
 def create_sample_data():
@@ -23,6 +24,7 @@ def create_sample_data():
         # Only create sample data if no data exists (not on every deployment)
         existing_genres = db.query(Genre).count()
         existing_books = db.query(Book).count()
+        existing_employees = db.query(Employee).count()
         
         # Skip if data already exists
         if existing_genres > 0 or existing_books > 0:
@@ -30,6 +32,52 @@ def create_sample_data():
             return
         
         print("Creating sample data...")
+        
+        # Create sample employees first
+        if existing_employees == 0:
+            sample_employees = [
+                Employee(
+                    employee_id="E001",
+                    name="田中太郎",
+                    name_kana="タナカタロウ",
+                    email="tanaka@company.com",
+                    department="システム開発部",
+                    position="シニアエンジニア",
+                    phone="03-1234-5678",
+                    hire_date=datetime(2020, 4, 1),
+                    status=EmployeeStatus.active,
+                    notes="Pythonエンジニア"
+                ),
+                Employee(
+                    employee_id="E002",
+                    name="佐藤花子",
+                    name_kana="サトウハナコ",
+                    email="sato@company.com",
+                    department="プロジェクト管理部",
+                    position="プロジェクトマネージャー",
+                    phone="03-1234-5679",
+                    hire_date=datetime(2019, 7, 15),
+                    status=EmployeeStatus.active,
+                    notes="アジャイル開発専門"
+                ),
+                Employee(
+                    employee_id="E003",
+                    name="鈴木一郎",
+                    name_kana="スズキイチロウ",
+                    email="suzuki@company.com",
+                    department="データ分析部",
+                    position="データアナリスト",
+                    phone="03-1234-5680",
+                    hire_date=datetime(2021, 1, 10),
+                    status=EmployeeStatus.active,
+                    notes="機械学習・統計分析"
+                )
+            ]
+            
+            for employee in sample_employees:
+                db.add(employee)
+            db.commit()
+            print("サンプル社員データを作成しました")
         
         # Create sample genres if they don't exist
         if existing_genres == 0:
@@ -109,6 +157,7 @@ def create_sample_data():
                     pages=420,
                     status=BookStatus.borrowed,
                     borrower="鈴木一郎",
+                    borrower_employee_id=3,  # E003 - 鈴木一郎
                     due_date=datetime(2024, 1, 15),
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow()

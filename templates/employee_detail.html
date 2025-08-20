@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ employee.name }} - 社員詳細 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>社員詳細</h1>
+        <div class="actions">
+            <a href="/employees/{{ employee.id }}/edit" class="btn btn-primary">編集</a>
+            <a href="/employees" class="btn btn-secondary">一覧に戻る</a>
+        </div>
+    </div>
+
+    <div class="employee-detail">
+        <div class="detail-section">
+            <h3>基本情報</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>社員番号</label>
+                    <span>{{ employee.employee_id }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>氏名</label>
+                    <span>{{ employee.name }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>フリガナ</label>
+                    <span>{{ employee.name_kana or "-" }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>メールアドレス</label>
+                    <span>
+                        {% if employee.email %}
+                            <a href="mailto:{{ employee.email }}">{{ employee.email }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>勤務情報</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>部署</label>
+                    <span>{{ employee.department or "-" }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>役職</label>
+                    <span>{{ employee.position or "-" }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>電話番号</label>
+                    <span>
+                        {% if employee.phone %}
+                            <a href="tel:{{ employee.phone }}">{{ employee.phone }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <label>入社日</label>
+                    <span>
+                        {% if employee.hire_date %}
+                            {{ employee.hire_date.strftime('%Y年%m月%d日') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <label>ステータス</label>
+                    <span class="status status-{{ employee.status.value }}">
+                        {% if employee.status.value == "active" %}在職中
+                        {% elif employee.status.value == "inactive" %}休職中
+                        {% elif employee.status.value == "retired" %}退職
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        {% if employee.notes %}
+        <div class="detail-section">
+            <h3>備考</h3>
+            <div class="notes">
+                <p>{{ employee.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="detail-section">
+            <h3>貸出履歴</h3>
+            {% if loans %}
+                <div class="loans-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>書籍名</th>
+                                <th>貸出日</th>
+                                <th>返却予定日</th>
+                                <th>返却日</th>
+                                <th>ステータス</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in loans %}
+                            <tr>
+                                <td>
+                                    <a href="/books/{{ loan.book.id }}">{{ loan.book.title }}</a>
+                                </td>
+                                <td>{{ loan.checkout_at.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ loan.due_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if loan.returned_at %}
+                                        {{ loan.returned_at.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if loan.returned_at %}
+                                        <span class="status status-returned">返却済み</span>
+                                    {% elif loan.is_overdue %}
+                                        <span class="status status-overdue">延滞中</span>
+                                    {% else %}
+                                        <span class="status status-borrowed">貸出中</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>貸出履歴はありません。</p>
+            {% endif %}
+        </div>
+
+        <div class="detail-section">
+            <h3>予約中の書籍</h3>
+            {% if reservations %}
+                <div class="reservations-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>書籍名</th>
+                                <th>予約日</th>
+                                <th>ステータス</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in reservations %}
+                            <tr>
+                                <td>
+                                    <a href="/books/{{ reservation.book.id }}">{{ reservation.book.title }}</a>
+                                </td>
+                                <td>{{ reservation.reserved_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="status status-{{ reservation.status.value }}">
+                                        {% if reservation.status.value == "active" %}予約中
+                                        {% elif reservation.status.value == "completed" %}完了
+                                        {% elif reservation.status.value == "cancelled" %}キャンセル
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>予約中の書籍はありません。</p>
+            {% endif %}
+        </div>
+
+        <div class="detail-section">
+            <h3>登録情報</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>登録日時</label>
+                    <span>{{ employee.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>最終更新日時</label>
+                    <span>{{ employee.updated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

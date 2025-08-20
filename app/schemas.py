@@ -1,7 +1,42 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
-from .models import BookStatus, ReservationStatus
+from .models import BookStatus, ReservationStatus, EmployeeStatus
+
+class EmployeeBase(BaseModel):
+    employee_id: str
+    name: str
+    name_kana: Optional[str] = None
+    email: Optional[str] = None
+    department: Optional[str] = None
+    position: Optional[str] = None
+    phone: Optional[str] = None
+    hire_date: Optional[datetime] = None
+    status: EmployeeStatus = EmployeeStatus.active
+    notes: Optional[str] = None
+
+class EmployeeCreate(EmployeeBase):
+    pass
+
+class EmployeeUpdate(BaseModel):
+    employee_id: Optional[str] = None
+    name: Optional[str] = None
+    name_kana: Optional[str] = None
+    email: Optional[str] = None
+    department: Optional[str] = None
+    position: Optional[str] = None
+    phone: Optional[str] = None
+    hire_date: Optional[datetime] = None
+    status: Optional[EmployeeStatus] = None
+    notes: Optional[str] = None
+
+class Employee(EmployeeBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class GenreBase(BaseModel):
     name: str
@@ -76,9 +111,11 @@ class LoanCreate(LoanBase):
 class Loan(LoanBase):
     id: int
     book_id: int
+    employee_id: int
     checkout_at: datetime
     returned_at: Optional[datetime] = None
     is_overdue: bool = False
+    employee: Optional[Employee] = None
 
     class Config:
         from_attributes = True
@@ -92,10 +129,12 @@ class ReservationCreate(ReservationBase):
 class Reservation(ReservationBase):
     id: int
     book_id: int
+    employee_id: int
     status: ReservationStatus
     reserved_at: datetime
     notified_at: Optional[datetime] = None
     expires_at: Optional[datetime] = None
+    employee: Optional[Employee] = None
 
     class Config:
         from_attributes = True

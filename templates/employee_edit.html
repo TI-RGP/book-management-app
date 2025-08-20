@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ employee.name }} - 編集 - 図書管理システム{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>社員情報編集</h1>
+
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="employee-form">
+        <div class="form-section">
+            <h3>基本情報</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employee_id">社員番号 *</label>
+                    <input type="text" id="employee_id" name="employee_id" value="{{ employee.employee_id }}" required>
+                    <small>例: E001, EMP-2024-001</small>
+                </div>
+                <div class="form-group">
+                    <label for="name">氏名 *</label>
+                    <input type="text" id="name" name="name" value="{{ employee.name }}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name_kana">フリガナ</label>
+                    <input type="text" id="name_kana" name="name_kana" value="{{ employee.name_kana or '' }}" placeholder="タナカタロウ">
+                </div>
+                <div class="form-group">
+                    <label for="email">メールアドレス</label>
+                    <input type="email" id="email" name="email" value="{{ employee.email or '' }}" placeholder="user@company.com">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>勤務情報</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="department">部署</label>
+                    <input type="text" id="department" name="department" value="{{ employee.department or '' }}" placeholder="システム開発部">
+                </div>
+                <div class="form-group">
+                    <label for="position">役職</label>
+                    <input type="text" id="position" name="position" value="{{ employee.position or '' }}" placeholder="シニアエンジニア">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">電話番号</label>
+                    <input type="tel" id="phone" name="phone" value="{{ employee.phone or '' }}" placeholder="03-1234-5678">
+                </div>
+                <div class="form-group">
+                    <label for="hire_date">入社日</label>
+                    <input type="date" id="hire_date" name="hire_date" value="{% if employee.hire_date %}{{ employee.hire_date.strftime('%Y-%m-%d') }}{% endif %}">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="status">ステータス</label>
+                    <select id="status" name="status" required>
+                        <option value="active" {% if employee.status.value == "active" %}selected{% endif %}>在職中</option>
+                        <option value="inactive" {% if employee.status.value == "inactive" %}selected{% endif %}>休職中</option>
+                        <option value="retired" {% if employee.status.value == "retired" %}selected{% endif %}>退職</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label for="notes">備考</label>
+                <textarea id="notes" name="notes" rows="3" placeholder="特記事項があれば記入してください">{{ employee.notes or '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">更新</button>
+            <a href="/employees/{{ employee.id }}" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
